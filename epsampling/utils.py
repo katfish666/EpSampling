@@ -30,16 +30,21 @@ def time_to_int(date):
 
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-def get_point_pred_performance(model_names, model_preds, y_test):
+from sktime.performance_metrics.forecasting import mean_relative_absolute_error
+def get_performance(model_names, model_preds, y_test, y_naive):
     
     metrics_dict = {'MAE': mean_absolute_error,
                     'MSE': mean_squared_error,
-                    'r2': r2_score}
+                    'r2': r2_score,
+                    'relMAE': mean_relative_absolute_error}
 
     model_res_dict = {model:{} for model in model_names}
     
     for model,pred in zip(model_names, model_preds):
         for metric, func in metrics_dict.items():
-            model_res_dict[model][metric] = func(y_test, pred)
+            if metric=='relMAE':
+                model_res_dict[model][metric] = func(y_test, pred, y_pred_benchmark=y_naive)
+            else:
+                model_res_dict[model][metric] = func(y_test, pred)
             
     return model_res_dict
