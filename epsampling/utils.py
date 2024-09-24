@@ -7,12 +7,13 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-d = datetime.today().strftime('%Y%m%d-%H%M%S')
-data_dir = '/work/users/k/4/k4thryn/Repos/EpSampling/data'
+DATE = datetime.today().strftime('%Y%m%d-%H%M%S')
+DATA_DIR = '/work/users/k/4/k4thryn/Repos/EpSampling/data/'
 
 import glob
-def load_latest_csv(csv_name, data_dir=f'{data_dir}/processed/'):
-    dates = sorted([x[-19:-4] for x in glob.glob(f'{data_dir}{csv_name}*')])
+def load_latest_csv(csv_name, data_dir=f'{DATA_DIR}processed/'):
+    dates = [x[-19:-4] for x in glob.glob(f'{data_dir}{csv_name}*')]
+    dates = sorted([x for x in dates if x[:3]=='202'])
     latest = dates[-1]
     file_name = f'{data_dir}{csv_name}_{latest}.csv'
     df = pd.read_csv(file_name)
