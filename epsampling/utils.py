@@ -11,14 +11,19 @@ DATE = datetime.today().strftime('%Y%m%d-%H%M%S')
 DATA_DIR = '/work/users/k/4/k4thryn/Repos/EpSampling/data/'
 
 import glob
-def load_csv(csv_name, data_dir=f'{DATA_DIR}processed/', timestamp=''):
+import os
+
+def load_csv(csv_name, path=f'{DATA_DIR}processed/', timestamp=''):
+# def load_csv(csv_name, path=os.path.join(DATA_DIR,'processed'), timestamp=''):
+
     if timestamp:
         latest = timestamp
     else:
-        dates = [x[-19:-4] for x in glob.glob(f'{data_dir}{csv_name}*')]
+        files = glob.glob(f'{path}/{csv_name}*')
+        dates = [x[-19:-4] for x in files]
         dates = sorted([x for x in dates if x[:3]=='202'])
         latest = dates[-1]
-    file_name = f'{data_dir}{csv_name}_{latest}.csv'
+    file_name = f'{path}{csv_name}_{latest}.csv'
     df = pd.read_csv(file_name)
     return df, file_name
 
