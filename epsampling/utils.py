@@ -11,10 +11,13 @@ DATE = datetime.today().strftime('%Y%m%d-%H%M%S')
 DATA_DIR = '/work/users/k/4/k4thryn/Repos/EpSampling/data/'
 
 import glob
-def load_latest_csv(csv_name, data_dir=f'{DATA_DIR}processed/'):
-    dates = [x[-19:-4] for x in glob.glob(f'{data_dir}{csv_name}*')]
-    dates = sorted([x for x in dates if x[:3]=='202'])
-    latest = dates[-1]
+def load_csv(csv_name, data_dir=f'{DATA_DIR}processed/', timestamp=''):
+    if timestamp:
+        latest = timestamp
+    else:
+        dates = [x[-19:-4] for x in glob.glob(f'{data_dir}{csv_name}*')]
+        dates = sorted([x for x in dates if x[:3]=='202'])
+        latest = dates[-1]
     file_name = f'{data_dir}{csv_name}_{latest}.csv'
     df = pd.read_csv(file_name)
     return df, file_name
@@ -26,8 +29,8 @@ def time_to_int(date):
     total += (int(m) - 1) * 60 * 60 
     total += (int(y) - 1970) * 60 * 60 * 24
     return total
-    print(y,m,d)
-    return 10*y + 100*m + d
+#     print(y,m,d)
+#     return 10*y + 100*m + d
 
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
