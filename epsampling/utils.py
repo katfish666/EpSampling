@@ -57,3 +57,31 @@ def get_performance(model_names, model_preds, y_test, y_naive):
                 model_res_dict[model][metric] = func(y_test, pred)
             
     return model_res_dict
+
+
+def drop_duplicate_cols(df):
+    uniq, idxs = np.unique(df, return_index=True, axis=1)
+    return pd.DataFrame(uniq, index=df.index, columns=df.columns[idxs])
+
+
+def drop_sers_with_nans(df, from_axis='rows'):
+    
+    if df.isnull().values.any()==True:
+        print(f'Dropped {from_axis} with NaNs!')
+
+        if from_axis=='rows':
+            dff = df.dropna(axis=0, inplace=False)
+            dff.reset_index(drop=True, inplace=True)
+            print(f'Num rows before: {df.shape[0]}')
+            print(f'Num rows after: {dff.shape[0]}')
+            
+        elif from_axis=='cols':
+            dff = df.dropna(axis=1, inplace=False)
+            print(f'Num cols before: {(df.shape[1])}')
+            print(f'Num cols after: {(dff.shape[1])}')
+            
+        return dff
+    
+    else:
+        print(f'No NaNs! :)')
+        return df
