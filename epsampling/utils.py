@@ -13,6 +13,25 @@ DATA_DIR = '/work/users/k/4/k4thryn/Repos/EpSampling/data/'
 import glob
 import os
 
+def drop_duplicate_cols(df):
+    uniq, idxs = np.unique(df, return_index=True, axis=1)
+    return pd.DataFrame(uniq, index=df.index, columns=df.columns[idxs])
+
+def date_str_to_int(date):
+    stripped = ("").join(date.split('-'))
+    num = int(stripped)
+    return num
+
+def fips_int_to_str(df):
+    if 'State_fips' in df.columns:
+        df['State_fips'] = df.State_fips.astype('str')
+        df['State_fips'] = df.State_fips.apply(lambda x: x.zfill(2))
+    if 'Fips' in df.columns:
+        df['Fips'] = df.Fips.astype('str')
+        df['Fips'] = df.Fips.apply(lambda x: x.zfill(5))
+    return df
+
+
 def load_csv(csv_name, path=f'{DATA_DIR}processed/', timestamp=''):
 # def load_csv(csv_name, path=os.path.join(DATA_DIR,'processed'), timestamp=''):
 
