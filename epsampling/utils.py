@@ -63,6 +63,7 @@ def get_performance(model_names, model_preds, y_test, y_naive):
     
     metrics_dict = {'MAE': mean_absolute_error,
                     'MSE': mean_squared_error,
+                    'RMSE': mean_squared_error,
                     'r2': r2_score,
                     'relMAE': mean_relative_absolute_error}
 
@@ -72,6 +73,8 @@ def get_performance(model_names, model_preds, y_test, y_naive):
         for metric, func in metrics_dict.items():
             if metric=='relMAE':
                 model_res_dict[model][metric] = func(y_test, pred, y_pred_benchmark=y_naive)
+            elif metric=='RMSE':
+                model_res_dict[model][metric] = func(y_test, pred, squared=False)
             else:
                 model_res_dict[model][metric] = func(y_test, pred)
             
