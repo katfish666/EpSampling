@@ -18,10 +18,15 @@ import warnings
 warnings.filterwarnings("ignore")
 np.set_printoptions(suppress=True,formatter={'float_kind': '{:f}'.format})
 
-from IPython.display import Audio, display
+# from IPython.display import Audio, display
+# def allDone():
+#     urL = 'https://wavlist.com/wav/cat-meow4.wav'
+#     display(Audio(url=urL, autoplay=True))
+    
+
+from IPython.display import Audio
 def allDone():
-    urL = 'https://wavlist.com/wav/cat-meow4.wav'
-    display(Audio(url=urL, autoplay=True))
+    display(Audio(filename='../cat_meow2.wav', autoplay=True))
 
 import pandas as pd
 pd.set_option('display.max_rows', 1000)
