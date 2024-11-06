@@ -10,6 +10,11 @@ warnings.filterwarnings('ignore')
 DATE = datetime.today().strftime('%Y%m%d-%H%M%S')
 DATA_DIR = '/work/users/k/4/k4thryn/Repos/EpSampling/data/'
 
+
+def printt(string, print_out=False):
+    if print_out: print(string)
+    else: return
+    
 import glob
 import os
 
@@ -53,40 +58,6 @@ def time_to_int(date):
     total += (int(m) - 1) * 60 * 60 
     total += (int(y) - 1970) * 60 * 60 * 24
     return total
-#     print(y,m,d)
-#     return 10*y + 100*m + d
-
-
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, median_absolute_error
-from sktime.performance_metrics.forecasting import mean_relative_absolute_error
-from sktime.performance_metrics.forecasting import median_relative_absolute_error
-
-def get_performance(model_names, model_preds, y_test, y_naive):
-    
-    metrics_dict = {'MAE': mean_absolute_error,
-                    'MedAE': median_absolute_error,
-                    'MSE': mean_squared_error,
-                    'RMSE': mean_squared_error,
-                    'r2': r2_score,
-                    'relMAE': mean_relative_absolute_error,
-                    'relMedAE': median_relative_absolute_error}
-
-    model_res_dict = {model:{} for model in model_names}
-    
-    for model,pred in zip(model_names, model_preds):
-        for metric, func in metrics_dict.items():
-            if metric=='relMAE':
-                model_res_dict[model][metric] = func(y_test, pred, y_pred_benchmark=y_naive)
-            elif metric=='relMedAE':
-                model_res_dict[model][metric] = func(y_test, pred, y_pred_benchmark=y_naive)
-            elif metric=='RMSE':
-                model_res_dict[model][metric] = func(y_test, pred, squared=False)
-            else:
-                model_res_dict[model][metric] = func(y_test, pred)
-            
-    return model_res_dict
-
-
 
 
 def drop_duplicate_cols(df):
@@ -94,30 +65,25 @@ def drop_duplicate_cols(df):
     return pd.DataFrame(uniq, index=df.index, columns=df.columns[idxs])
 
 
-def drop_sers_with_nans(df, from_axis='rows'):
-    
+def drop_sers_with_nans(df, from_axis='rows', print_out=False):
     if df.isnull().values.any()==True:
-        print(f'Dropped {from_axis} with NaNs!')
-
+        printt(f"Dropped {from_axis} with NaNs!", print_out)
         if from_axis=='rows':
             dff = df.dropna(axis=0, inplace=False)
             dff.reset_index(drop=True, inplace=True)
-            print(f'Num rows before: {df.shape[0]}')
-            print(f'Num rows after: {dff.shape[0]}')
-            
+            printt(f"Num rows before: {df.shape[0]}\n"
+                   f"Num rows after: {dff.shape[0]}", print_out) 
         elif from_axis=='cols':
             dff = df.dropna(axis=1, inplace=False)
-            print(f'Num cols before: {(df.shape[1])}')
-            print(f'Num cols after: {(dff.shape[1])}')
-            
+            printt(f"Num cols before: {df.shape[1]}\n"
+                   f"Num cols after: {dff.shape[1]}", print_out) 
         return dff
-    
     else:
-        print(f'No NaNs! :)')
+        printt(f"No NaNs! :)", print_out)
         return df
     
-def get_chunks(lst, n):
+def get_chunks(lst, num_membs=4):
     chunks = []
-    for i in range(0, len(lst), n):
-        chunks.append(lst[i:i + n])
+    for i in range(0, len(lst), num_membs):
+        chunks.append(lst[i:i + num_membs])
     return chunks

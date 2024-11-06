@@ -96,28 +96,29 @@ def get_date_chunked_splits(df, chunks, chunk_idx, samp_frac=None):
 
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, median_absolute_error
-from sktime.performance_metrics.forecasting import mean_relative_absolute_error
-from sktime.performance_metrics.forecasting import median_relative_absolute_error
+# from sktime.performance_metrics.forecasting import mean_relative_absolute_error
+# from sktime.performance_metrics.forecasting import median_relative_absolute_error
 
-def get_performance(model_names, model_preds, y_test, y_naive):
+def get_performance(model_names, model_preds, y_test):
     
     metrics_dict = {'MAE': mean_absolute_error,
                     'MedAE': median_absolute_error,
                     'MSE': mean_squared_error,
                     'RMSE': mean_squared_error,
                     'r2': r2_score,
-                    'relMAE': mean_relative_absolute_error,
-                    'relMedAE': median_relative_absolute_error}
+#                     'relMAE': mean_relative_absolute_error,
+#                     'relMedAE': median_relative_absolute_error
+                   }
 
     model_res_dict = {model:{} for model in model_names}
     
     for model,pred in zip(model_names, model_preds):
         for metric, func in metrics_dict.items():
-            if metric=='relMAE':
-                model_res_dict[model][metric] = func(y_test, pred, y_pred_benchmark=y_naive)
-            elif metric=='relMedAE':
-                model_res_dict[model][metric] = func(y_test, pred, y_pred_benchmark=y_naive)
-            elif metric=='RMSE':
+#             if metric=='relMAE':
+#                 model_res_dict[model][metric] = func(y_test, pred, y_pred_benchmark=y_naive)
+#             elif metric=='relMedAE':
+#                 model_res_dict[model][metric] = func(y_test, pred, y_pred_benchmark=y_naive)
+            if metric=='RMSE':
                 model_res_dict[model][metric] = func(y_test, pred, squared=False)
             else:
                 model_res_dict[model][metric] = func(y_test, pred)
