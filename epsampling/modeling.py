@@ -124,3 +124,32 @@ def get_performance(model_names, model_preds, y_test):
                 model_res_dict[model][metric] = func(y_test, pred)
             
     return model_res_dict
+
+
+
+def get_metrics_ser(df, target_col, pred_col, 
+                    naive_true_col='Naive_true_deaths_x', naive_proj_col='Naive_proj_deaths_x'):
+    
+    metrics_dict = {'MAE': mean_absolute_error,
+                    'MedAE': median_absolute_error,
+                    'MSE': mean_squared_error,
+                    'RMSE': mean_squared_error,
+                    'r2': r2_score
+                    }
+    
+    mae = mean_absolute_error(df[target_col], df[pred_col])
+    medae = median_absolute_error(df[target_col], df[pred_col])
+    r2 = r2_score(df[target_col], df[pred_col])
+    mse = mean_squared_error(df[target_col], df[pred_col])
+    
+    # relMAE to naive_true
+    relmae_true = mae / mean_absolute_error(df[target_col],df[naive_true_col])
+    # relMAE to naive_proj
+    relmae_proj = mae / mean_absolute_error(df[target_col],df[naive_proj_col])
+    
+    ser = {'Model':pred_col, 'MAE':mae, 'MedAE':medae, 
+           'R-squared':r2, 'MSE': mse, 'relMAE (Proj)': relmae_proj, 
+           'relMAE (True)': relmae_true}
+    
+    return ser
+    
