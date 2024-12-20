@@ -1,6 +1,110 @@
 from setup_nb_env import *
 
 
+DATA_DIR = '/work/users/k/4/k4thryn/Repos/OLD_EpSampling_Nov2024/data/'
+
+def get_model_df(df, X_COLS, Y_COL, NAIVE_COL):
+    cols = ['Date', 'Fips'] + X_COLS + [Y_COL, NAIVE_COL]
+    df = df[cols]    
+    return df
+
+
+
+from sklearn import linear_model
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# def get_df_res(df_train, df_test, X_COLS, Y_COL, PRED_COL, ALG):
+            
+#     X_trainin = df_train[X_COLS]
+#     X_test = df_test[X_COLS]
+        
+#     y_train = df_train[Y_COL]    
+    
+#     df_pred = df_test.copy()
+#     reg = linear_model.LinearRegression().fit(X_train, y_train)
+#     df_pred['Algorithm'] = ALG
+#     df_pred[PRED_COL] = reg.predict(X_test)
+    
+#     return df_pred
+
+
+from sklearn import linear_model
+from sklearn.model_selection import train_test_split
+
+from sklego.meta import ZeroInflatedRegressor as zir_model
+from sklearn.svm import SVC
+
+import statsmodels.api as sm
+
+def get_df_res(df_train, df_test, X_COLS, Y_COL, PRED_COL, ALG, standardize=False):  
+    
+    y_train = df_train[Y_COL]
+        
+    if standardize==True:
+        standizer = StandardScaler()
+        X_train = standizer.fit_transform(df_train[X_COLS])
+        X_test = standizer.fit_transform(df_test[X_COLS])
+    else:
+        X_train = df_train[X_COLS]
+        X_test = df_test[X_COLS]
+        
+        
+#     y_train = np.log(y_train)
+    
+    df_pred = df_test.copy()
+    
+    if ALG=='Linear':
+        reg = linear_model.LinearRegression().fit(X_train, y_train)
+    elif ALG=='Poisson':
+        offset = df_train['County population']
+#         reg = sm.GLM(y_train, (sm.add_constant(offset)), 
+#                      family = sm.families.Poisson(sm.families.links.log)).fit() 
+        reg = sm.GLM(y_train, (sm.add_constant(offset)), 
+                     family = sm.families.Poisson()).fit()
+#         reg = sm.
+    elif ALG=='Zero-Inflated':
+        reg = zir_model(
+            classifier=SVC(),
+            regressor=linear_model.LinearRegression()).fit(X_train, y_train) 
+            
+    df_pred['Algorithm'] = ALG
+    df_pred[PRED_COL] = reg.predict(X_test)
+    
+    return df_pred
+
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, median_absolute_error
+
+def get_metrics_ser(df, target_col, pred_col, alg_col, naive_col):
+    
+    metrics_dict = {'MAE': mean_absolute_error,
+                    'MedAE': median_absolute_error,
+                    'MSE': mean_squared_error,
+                    'RMSE': mean_squared_error,
+                    'r2': r2_score
+                    }
+    
+    mae = mean_absolute_error(df[target_col], df[pred_col])
+    medae = median_absolute_error(df[target_col], df[pred_col])
+    r2 = r2_score(df[target_col], df[pred_col])
+    mse = mean_squared_error(df[target_col], df[pred_col])
+    
+    relmae = mae / mean_absolute_error(df[target_col],df[naive_col])
+    
+    ser = {'Algorithm':alg_col, 'MAE':mae, 'MedAE':medae, 
+           'R-squared':r2, 'MSE': mse, 'relMAE': relmae,}
+    
+    return ser
+
+
+
+
+
+
+
+
+
+
 ## STATISTICAL MODELS # # # # # # # # #
 
 
@@ -127,29 +231,29 @@ def get_performance(model_names, model_preds, y_test):
 
 
 
-def get_metrics_ser(df, target_col, pred_col, 
-                    naive_true_col='Naive_true_deaths_x', naive_proj_col='Naive_proj_deaths_x'):
+# def get_metrics_ser(df, target_col, pred_col, 
+#                     naive_true_col='Naive_true_deaths_x', naive_proj_col='Naive_proj_deaths_x'):
     
-    metrics_dict = {'MAE': mean_absolute_error,
-                    'MedAE': median_absolute_error,
-                    'MSE': mean_squared_error,
-                    'RMSE': mean_squared_error,
-                    'r2': r2_score
-                    }
+#     metrics_dict = {'MAE': mean_absolute_error,
+#                     'MedAE': median_absolute_error,
+#                     'MSE': mean_squared_error,
+#                     'RMSE': mean_squared_error,
+#                     'r2': r2_score
+#                     }
     
-    mae = mean_absolute_error(df[target_col], df[pred_col])
-    medae = median_absolute_error(df[target_col], df[pred_col])
-    r2 = r2_score(df[target_col], df[pred_col])
-    mse = mean_squared_error(df[target_col], df[pred_col])
+#     mae = mean_absolute_error(df[target_col], df[pred_col])
+#     medae = median_absolute_error(df[target_col], df[pred_col])
+#     r2 = r2_score(df[target_col], df[pred_col])
+#     mse = mean_squared_error(df[target_col], df[pred_col])
     
-    # relMAE to naive_true
-    relmae_true = mae / mean_absolute_error(df[target_col],df[naive_true_col])
-    # relMAE to naive_proj
-    relmae_proj = mae / mean_absolute_error(df[target_col],df[naive_proj_col])
+#     # relMAE to naive_true
+#     relmae_true = mae / mean_absolute_error(df[target_col],df[naive_true_col])
+#     # relMAE to naive_proj
+#     relmae_proj = mae / mean_absolute_error(df[target_col],df[naive_proj_col])
     
-    ser = {'Model':pred_col, 'MAE':mae, 'MedAE':medae, 
-           'R-squared':r2, 'MSE': mse, 'relMAE (Proj)': relmae_proj, 
-           'relMAE (True)': relmae_true}
+#     ser = {'Model':pred_col, 'MAE':mae, 'MedAE':medae, 
+#            'R-squared':r2, 'MSE': mse, 'relMAE (Proj)': relmae_proj, 
+#            'relMAE (True)': relmae_true}
     
-    return ser
+#     return ser
     
