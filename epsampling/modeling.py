@@ -3,8 +3,8 @@ from setup_nb_env import *
 
 DATA_DIR = '/work/users/k/4/k4thryn/Repos/OLD_EpSampling_Nov2024/data/'
 
-def get_model_df(df, X_COLS, Y_COL, NAIVE_COL):
-    cols = ['Date', 'Fips'] + X_COLS + [Y_COL, NAIVE_COL]
+def get_model_df(df, X_COLS, Y_COL, NAIVE_COL, OFFSET_COL=None):
+    cols = ['Date', 'Fips'] + X_COLS + [Y_COL, NAIVE_COL, OFFSET_COL]
     df = df[cols]    
     return df
 
@@ -37,7 +37,7 @@ from sklearn.svm import SVC
 
 import statsmodels.api as sm
 
-def get_df_res(df_train, df_test, X_COLS, Y_COL, PRED_COL, ALG, standardize=False):  
+def get_df_res(df_train, df_test, X_COLS, Y_COL, OFFSET_COL, PRED_COL, ALG, standardize=False):  
     
     y_train = df_train[Y_COL]
         
@@ -49,26 +49,35 @@ def get_df_res(df_train, df_test, X_COLS, Y_COL, PRED_COL, ALG, standardize=Fals
         X_train = df_train[X_COLS]
         X_test = df_test[X_COLS]
         
+#     display(df_train, df_test)
+#     display(X_train, X_test)
         
 #     y_train = np.log(y_train)
-    
     df_pred = df_test.copy()
     
     if ALG=='Linear':
         reg = linear_model.LinearRegression().fit(X_train, y_train)
+        
     elif ALG=='Poisson':
-        offset = df_train['County population']
+        offset = df_train[OFFSET_COL]
+        
 #         reg = sm.GLM(y_train, (sm.add_constant(offset)), 
 #                      family = sm.families.Poisson(sm.families.links.log)).fit() 
         reg = sm.GLM(y_train, (sm.add_constant(offset)), 
                      family = sm.families.Poisson()).fit()
-#         reg = sm.
+
     elif ALG=='Zero-Inflated':
         reg = zir_model(
             classifier=SVC(),
             regressor=linear_model.LinearRegression()).fit(X_train, y_train) 
             
     df_pred['Algorithm'] = ALG
+    
+#     display(X_test, X_train, y_train)
+    
+#     if ALG=='Poisson':
+#         df_pred[PRED_COL] = reg.predict(exog=X_test, params)
+#     else:
     df_pred[PRED_COL] = reg.predict(X_test)
     
     return df_pred
